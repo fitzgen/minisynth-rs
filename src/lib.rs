@@ -1,6 +1,7 @@
 extern crate failure;
 extern crate z3;
 
+mod abstract_interpret;
 mod arena;
 mod ast;
 mod eval;
@@ -15,11 +16,7 @@ pub fn eval(source: &str, env: &HashMap<String, isize>) -> Result<isize> {
     let ctx = &mut ast::Context::default();
     let p = parser::StartParser::new();
     let node = p.parse(ctx, source).map_err(|e| format_err!("{}", e))?;
-    eval::eval(ctx, node, &mut |s| {
-        env.get(s)
-            .cloned()
-            .ok_or_else(|| format_err!("undefined variable: {}", s))
-    })
+    eval::eval(ctx, node, env)
 }
 
 #[cfg(test)]
