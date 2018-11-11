@@ -20,7 +20,9 @@ pub enum Node {
     Division(NodeId, NodeId),
     RightShift(NodeId, NodeId),
     LeftShift(NodeId, NodeId),
+    Const(isize),
     Negation(NodeId),
+    Conditional(NodeId, NodeId, NodeId),
 }
 
 impl Context {
@@ -64,8 +66,22 @@ impl Context {
         self.nodes.alloc(Node::LeftShift(l, r))
     }
 
+    pub fn new_const(&mut self, i: isize) -> NodeId {
+        self.nodes.alloc(Node::Const(i))
+    }
+
     pub fn new_negation(&mut self, i: NodeId) -> NodeId {
         self.nodes.alloc(Node::Negation(i))
+    }
+
+    pub fn new_conditional(
+        &mut self,
+        condition: NodeId,
+        consequent: NodeId,
+        alternative: NodeId,
+    ) -> NodeId {
+        self.nodes
+            .alloc(Node::Conditional(condition, consequent, alternative))
     }
 
     pub fn node_ref(&self, id: NodeId) -> &Node {

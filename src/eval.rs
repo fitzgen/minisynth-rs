@@ -7,6 +7,7 @@ where
     L: for<'a> FnMut(&'a str) -> Result<isize>,
 {
     match *ctx.node_ref(node) {
+        Node::Const(i) => Ok(i),
         Node::Identifier(s) => {
             let s = ctx.interned(s);
             lookup(s)
@@ -47,6 +48,12 @@ where
         Node::Negation(n) => {
             let n = eval(ctx, n, lookup)?;
             Ok(-n)
+        }
+        Node::Conditional(condition, consequent, alternative) => {
+            let condition = eval(ctx, condition, lookup)?;
+            let consequent = eval(ctx, consequent, lookup)?;
+            let alternative = eval(ctx, alternative, lookup)?;
+            Ok((condition != 0) as isize * consequent + (condition == 0) as isize * alternative)
         }
     }
 }

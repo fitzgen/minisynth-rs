@@ -8,11 +8,13 @@ Integer: isize = <s:r"[0-9]+"> => isize::from_str(s).unwrap();
 Identifier: ast::NodeId = <s:r"[a-zA-Z][a-zA-Z0-9_]*"> => ctx.new_identifer(s);
 
 Sum: ast::NodeId = {
+    <t:Term> => t,
     <l:Sum> "+" <r:Term> => ctx.new_addition(l, r),
     <l:Sum> "-" <r:Term> => ctx.new_subtraction(l, r),
 };
 
 Term: ast::NodeId = {
+    <i:Item> => i,
     <l:Term> "*" <r:Item> => ctx.new_multiplication(l, r),
     <l:Term> "/" <r:Item> => ctx.new_division(l, r),
     <l:Term> ">>" <r:Item> => ctx.new_right_shift(l, r),
@@ -20,9 +22,14 @@ Term: ast::NodeId = {
 };
 
 Item: ast::NodeId = {
+    <n:Integer> => ctx.new_const(n),
     "-" <i:Item> => ctx.new_negation(i),
     <i:Identifier> => i,
     "(" <s:Start> ")" => s,
 };
 
-pub Start: ast::NodeId = <s:Sum> => s;
+pub Start: ast::NodeId = {
+    <s:Sum> => s,
+    <condition:Sum> "?" <consequent:Sum> ":" <alternative:Sum> =>
+        ctx.new_conditional(condition, consequent, alternative),
+};
