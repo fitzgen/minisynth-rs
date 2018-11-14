@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 grammar(ctx: &mut ast::Context);
 
-Integer: isize = <s:r"[0-9]+"> => isize::from_str(s).unwrap();
+Integer: i64 = <s:r"[0-9]+"> => i64::from_str(s).unwrap();
 
 Identifier: ast::NodeId = <s:r"[a-zA-Z][a-zA-Z0-9_]*"> => ctx.new_identifer(s);
 

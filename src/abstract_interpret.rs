@@ -6,7 +6,7 @@ pub trait AbstractInterpret {
     type Output;
 
     /// Create a constant output value.
-    fn constant(&mut self, c: isize) -> Self::Output;
+    fn constant(&mut self, c: i64) -> Self::Output;
 
     /// `lhs + rhs`
     fn add(&mut self, lhs: &Self::Output, rhs: &Self::Output) -> Self::Output;

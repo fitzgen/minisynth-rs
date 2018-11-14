@@ -1,4 +1,4 @@
-use crate::arena::{Arena, Id};
+use id_arena::{Arena, Id};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -20,7 +20,7 @@ pub enum Node {
     Division(NodeId, NodeId),
     RightShift(NodeId, NodeId),
     LeftShift(NodeId, NodeId),
-    Const(isize),
+    Const(i64),
     Negation(NodeId),
     Conditional(NodeId, NodeId, NodeId),
 }
@@ -66,7 +66,7 @@ impl Context {
         self.nodes.alloc(Node::LeftShift(l, r))
     }
 
-    pub fn new_const(&mut self, i: isize) -> NodeId {
+    pub fn new_const(&mut self, i: i64) -> NodeId {
         self.nodes.alloc(Node::Const(i))
     }
 

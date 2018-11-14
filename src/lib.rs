@@ -2,71 +2,36 @@ extern crate failure;
 extern crate z3;
 
 mod abstract_interpret;
-mod arena;
 mod ast;
 mod eval;
 mod parser;
+mod synthesize;
 
 use failure::format_err;
 use std::collections::HashMap;
 
 pub type Result<T> = ::std::result::Result<T, failure::Error>;
 
-pub fn eval(source: &str, env: &HashMap<String, isize>) -> Result<isize> {
+pub fn eval(source: &str, env: &HashMap<String, i64>) -> Result<i64> {
     let ctx = &mut ast::Context::default();
     let p = parser::StartParser::new();
     let node = p.parse(ctx, source).map_err(|e| format_err!("{}", e))?;
     eval::eval(ctx, node, env)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::eval;
-    use std::collections::HashMap;
+pub fn synth(specification: &str, template: &str) -> Result<HashMap<String, i64>> {
+    let config = z3::Config::new();
+    let z3_ctx = &z3::Context::new(&config);
 
-    #[test]
-    fn test_add() {
-        assert_eq!(eval("1 + 2", &Default::default()).unwrap(), 3);
-    }
+    let ast_ctx = &mut ast::Context::default();
+    let p = parser::StartParser::new();
 
-    #[test]
-    fn test_sub() {
-        assert_eq!(eval("2 - 1", &Default::default()).unwrap(), 1);
-    }
+    let specification = p
+        .parse(ast_ctx, specification)
+        .map_err(|e| format_err!("error parsing specification:{}", e))?;
+    let template = p
+        .parse(ast_ctx, template)
+        .map_err(|e| format_err!("error parsing template: {}", e))?;
 
-    #[test]
-    fn test_mul() {
-        assert_eq!(eval("2 * 3", &Default::default()).unwrap(), 6);
-    }
-
-    #[test]
-    fn test_div() {
-        assert_eq!(eval("4 / 2", &Default::default()).unwrap(), 2);
-    }
-
-    #[test]
-    fn test_shr() {
-        assert_eq!(eval("2 >> 1", &Default::default()).unwrap(), 1);
-    }
-
-    #[test]
-    fn test_shl() {
-        assert_eq!(eval("2 << 1", &Default::default()).unwrap(), 4);
-    }
-
-    #[test]
-    fn test_neg() {
-        assert_eq!(eval("-2", &Default::default()).unwrap(), -2);
-    }
-
-    #[test]
-    fn test_conditional() {
-        assert_eq!(eval("1 ? 2 : 3", &Default::default()).unwrap(), 2);
-    }
-
-    #[test]
-    fn test_var() {
-        let vars: HashMap<_, _> = [("a".to_string(), 42)].iter().cloned().collect();
-        assert_eq!(eval("a", &vars).unwrap(), 42);
-    }
+    synthesize::synthesize(z3_ctx, ast_ctx, specification, template)
 }
