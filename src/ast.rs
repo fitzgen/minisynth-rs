@@ -5,8 +5,7 @@ use std::collections::HashMap;
 pub struct Context {
     idents: Arena<String>,
     already_interned: HashMap<String, StringId>,
-
-    pub(crate) nodes: Arena<Node>,
+    nodes: Arena<Node>,
 }
 
 pub type StringId = Id<String>;
