@@ -5,25 +5,25 @@ grammar(ctx: &mut ast::Context);
 
 Integer: i64 = <s:r"[0-9]+"> => i64::from_str(s).unwrap();
 
-Identifier: ast::NodeId = <s:r"[a-zA-Z][a-zA-Z0-9_]*"> => ctx.new_identifer(s);
+Identifier: ast::NodeId = <s:r"[a-zA-Z][a-zA-Z0-9_]*"> => ctx.new_identifier(s);
 
 Sum: ast::NodeId = {
     <t:Term> => t,
-    <l:Sum> "+" <r:Term> => ctx.new_addition(l, r),
-    <l:Sum> "-" <r:Term> => ctx.new_subtraction(l, r),
+    <l:Sum> "+" <r:Term> => ctx.new_node(ast::Node::Addition(l, r)),
+    <l:Sum> "-" <r:Term> => ctx.new_node(ast::Node::Subtraction(l, r)),
 };
 
 Term: ast::NodeId = {
     <i:Item> => i,
-    <l:Term> "*" <r:Item> => ctx.new_multiplication(l, r),
-    <l:Term> "/" <r:Item> => ctx.new_division(l, r),
-    <l:Term> ">>" <r:Item> => ctx.new_right_shift(l, r),
-    <l:Term> "<<" <r:Item> => ctx.new_left_shift(l, r),
+    <l:Term> "*" <r:Item> => ctx.new_node(ast::Node::Multiplication(l, r)),
+    <l:Term> "/" <r:Item> => ctx.new_node(ast::Node::Division(l, r)),
+    <l:Term> ">>" <r:Item> => ctx.new_node(ast::Node::RightShift(l, r)),
+    <l:Term> "<<" <r:Item> => ctx.new_node(ast::Node::LeftShift(l, r)),
 };
 
 Item: ast::NodeId = {
-    <n:Integer> => ctx.new_const(n),
-    "-" <i:Item> => ctx.new_negation(i),
+    <n:Integer> => ctx.new_node(ast::Node::Const(n)),
+    "-" <i:Item> => ctx.new_node(ast::Node::Negation(i)),
     <i:Identifier> => i,
     "(" <s:Start> ")" => s,
 };
@@ -31,5 +31,5 @@ Item: ast::NodeId = {
 pub Start: ast::NodeId = {
     <s:Sum> => s,
     <condition:Sum> "?" <consequent:Sum> ":" <alternative:Sum> =>
-        ctx.new_conditional(condition, consequent, alternative),
+        ctx.new_node(ast::Node::Conditional(condition, consequent, alternative)),
 };
